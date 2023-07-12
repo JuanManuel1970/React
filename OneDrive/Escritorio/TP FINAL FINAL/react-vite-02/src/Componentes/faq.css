@@ -1,0 +1,19 @@
+.faq ol {
+  list-style-type: none;
+
+}
+
+.faq h3 {
+  cursor: pointer;
+}
+
+.faq p {
+  display: none;
+}
+
+.faq p.show {
+  padding-bottom: 30px;
+  display: block;
+  font-size: larger;
+  color: blue;
+}
