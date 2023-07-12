@@ -8,6 +8,8 @@ export default defineConfig({
     rollupOptions: {
       external: ["@fortawesome/react-fontawesome"]
     }
+  }, server: {
+    host: '0.0.0.0',
   }
 })
 
