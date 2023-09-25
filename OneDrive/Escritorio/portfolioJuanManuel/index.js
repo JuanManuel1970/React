@@ -1,22 +1,32 @@
-const express = require("express");  // Importamos el módulo Express
-const app = express();  // Creamos una instancia de la aplicación Express
-const hbs = require("hbs");  // Importamos el módulo Handlebars para las vistas
-const nodemailer = require("nodemailer");  // Importamos nodemailer para enviar correos
-const path = require("path");  // Importamos el módulo path para manejar rutas
-require("dotenv").config();  // Configuramos las variables de entorno
-const mongoose = require("mongoose");  // Importamos mongoose para interactuar con MongoDB
+// Importación de módulos y configuración inicial
+const express = require("express");
+const app = express();
+const hbs = require("hbs");
+const nodemailer = require("nodemailer");
+const path = require("path");
+require("dotenv").config(); // Carga variables de entorno desde un archivo .env
+const mongoose = require("mongoose");
 
-const PORT = process.env.PORT || 9000;  // Configuramos el puerto en el que se ejecutará el servidor
+const PORT = process.env.PORT || 9000; // Configura el puerto del servidor web
 
-// Configuración de Express y Handlebars
+// Inicia el servidor web
+app.listen(PORT, () => {
+  console.log(`Servidor Express escuchando en el puerto ${PORT}`);
+});
+
+// Middleware para procesar datos JSON y formularios
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Middleware para servir archivos estáticos desde la carpeta "public"
 app.use(express.static(path.join(__dirname, "public")));
+
+// Configura el motor de plantillas Handlebars (hbs)
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "views"));
 hbs.registerPartials(path.join(__dirname, "views/partials"));
 
-// Conexión a la base de datos MongoDB usando variables de entorno
+// Conexión a la base de datos MongoDB utilizando Mongoose
 mongoose
   .connect(process.env.MONGOATLAS, {
     useNewUrlParser: true,
@@ -29,7 +39,7 @@ mongoose
     console.log("Error al conectar a la base de datos:", error);
   });
 
-// Definición del esquema para el modelo Usuario en la base de datos
+// Definición de un modelo de datos para MongoDB utilizando Mongoose
 const Usuario = mongoose.model("Usuario", {
   nombre: String,
   email: String,
@@ -37,36 +47,39 @@ const Usuario = mongoose.model("Usuario", {
   mensaje: String,
 });
 
-// Rutas de la aplicación
+// Definición de rutas de la aplicación
+
+// Ruta principal que renderiza la plantilla "index.hbs"
 app.get("/", (req, res) => {
   res.render("index", {
     titulo: "Home",
   });
 });
 
+// Ruta que renderiza la plantilla "calculadora.hbs"
 app.get("/calculadora", (req, res) => {
   res.render("calculadora", {
     titulo: "Calculadora",
   });
 });
 
-// Página personalizada para "Matias"
+// Ruta personalizada "matias" que renderiza la plantilla "matias.hbs"
 app.get("/matias", (req, res) => {
   res.render("matias", {
     titulo: "Matias",
   });
 });
 
-// Manejo del formulario de contacto (POST)
+// Ruta para manejar el formulario de contacto enviado mediante POST
 app.post("/", async (req, res) => {
   const nombre = req.body.nombre;
   const email = req.body.email;
   const telefono = req.body.telefono;
   const mensaje = req.body.mensaje;
 
-  // Función para enviar un correo utilizando nodemailer
+  // Función asincrónica para enviar un correo electrónico
   async function envioMail() {
-    // Configuración del transportador para el servicio de correo
+    // Configuración del transportador de correo (en este caso, Gmail)
     let transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -92,7 +105,7 @@ app.post("/", async (req, res) => {
     });
   }
 
-  // Datos del formulario recopilados en un objeto
+  // Creación de un objeto de datos a partir de la información del formulario
   let datos = {
     nombre: nombre,
     email: email,
@@ -100,25 +113,20 @@ app.post("/", async (req, res) => {
     mensaje: mensaje,
   };
 
-  // Creación de un nuevo documento Usuario en MongoDB
+  // Creación de una instancia del modelo "Usuario" con los datos del formulario
   const usuario = new Usuario(datos);
 
   try {
-    await usuario.save();  // Guardamos el documento en la base de datos
+    // Guarda los datos del formulario en la base de datos MongoDB
+    await usuario.save();
     console.log("Datos guardados correctamente");
 
-    await envioMail();  // Enviamos el correo de agradecimiento
-    res.render("enviado");  // Mostramos una vista de confirmación
+    // Envía un correo electrónico al remitente
+    await envioMail();
+    res.render("enviado"); // Renderiza una página de confirmación
   } catch (error) {
     console.log("Error al guardar los datos:", error);
     res.status(500).send("Error al guardar los datos");
   }
 });
-
-// Iniciamos el servidor en el puerto especificado
-app.listen(PORT, () => {
-  console.log(`Servidor conectado en el puerto: ${PORT}`);
-});
-
-
 
