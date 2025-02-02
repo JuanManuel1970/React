@@ -26,18 +26,14 @@ app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "views"));
 hbs.registerPartials(path.join(__dirname, "views/partials"));
 
-// Conexión a la base de datos MongoDB utilizando Mongoose
-mongoose
-  .connect(process.env.MONGOATLAS, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+mongoose.connect(process.env.MONGOLOCAL)
   .then(() => {
     console.log("Conectado a la base de datos MongoDB");
   })
   .catch((error) => {
     console.log("Error al conectar a la base de datos:", error);
   });
+
 
 // Definición de un modelo de datos para MongoDB utilizando Mongoose
 const Usuario = mongoose.model("Usuario", {
